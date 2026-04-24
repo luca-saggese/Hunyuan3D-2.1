@@ -62,12 +62,17 @@ try:
 except Exception as exc:
     print(f"Warning: torchvision fix not applied: {exc}")
 
-from hy3dshape import FaceReducer, Hunyuan3DDiTFlowMatchingPipeline
-from hy3dshape.pipelines import export_to_trimesh
+from hy3dshape.pipelines import Hunyuan3DDiTFlowMatchingPipeline, export_to_trimesh
 from hy3dshape.rembg import BackgroundRemover
 from hy3dshape.utils import logger
 from hy3dpaint.convert_utils import create_glb_with_pbr_materials
 from hy3dpaint.textureGenPipeline import Hunyuan3DPaintConfig, Hunyuan3DPaintPipeline
+
+try:
+    from hy3dshape.postprocessors import FaceReducer
+except Exception as exc:
+    FaceReducer = None
+    print(f"Warning: FaceReducer unavailable, mesh simplification disabled: {exc}")
 
 
 MAX_SEED = 10_000_000
@@ -290,7 +295,7 @@ def _run_generation(payload: OpenAI3DRequest, task_id: str) -> dict:
 
     mesh = export_to_trimesh(outputs)[0]
 
-    if payload.simplify_mesh:
+    if payload.simplify_mesh and STATE.get("face_reduce_worker") is not None:
         mesh = STATE["face_reduce_worker"](mesh, payload.target_face_count)
 
     files = []
@@ -303,7 +308,10 @@ def _run_generation(payload: OpenAI3DRequest, task_id: str) -> dict:
         if tex_pipeline is None:
             raise RuntimeError("Texture generation not available. Start without --disable_tex.")
 
-        mesh_for_tex = STATE["face_reduce_worker"](mesh, payload.face_count)
+        if STATE.get("face_reduce_worker") is not None:
+            mesh_for_tex = STATE["face_reduce_worker"](mesh, payload.face_count)
+        else:
+            mesh_for_tex = mesh
         mesh_for_tex_path = _export_mesh(mesh_for_tex, save_folder, textured=False, fmt="obj")
 
         if single_image is not None:
@@ -487,7 +495,10 @@ def _bootstrap(args):
     if args.compile:
         STATE["shape_pipeline"].compile()
 
-    STATE["face_reduce_worker"] = FaceReducer()
+    if FaceReducer is not None:
+        STATE["face_reduce_worker"] = FaceReducer()
+    else:
+        STATE["face_reduce_worker"] = None
 
     if not args.disable_tex:
         conf = Hunyuan3DPaintConfig(max_num_view=8, resolution=768)
