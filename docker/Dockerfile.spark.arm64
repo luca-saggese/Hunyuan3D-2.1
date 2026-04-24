@@ -75,6 +75,8 @@ for raw_line in src.read_text(encoding='utf-8').splitlines():
         continue
     if lower.startswith('bpy=='):
         continue
+    if lower.startswith('xatlas=='):
+        continue
     if lower.startswith('pymeshlab=='):
         out_lines.append('pymeshlab==2025.7.post1')
         continue
@@ -92,6 +94,10 @@ RUN \
     --timeout 180 \
     --prefer-binary \
     -r /tmp/requirements.spark_arm64.txt
+
+# xatlas often fails in isolated builds on ARM64; install separately with explicit build toolchain.
+RUN CMAKE_ARGS="-DCMAKE_BUILD_TYPE=Release" \
+    pip install --no-cache-dir --no-build-isolation --verbose xatlas==0.0.9
 
 # bpy on ARM64 is generally not reliably available via pip; install with conda.
 RUN conda install -y -c conda-forge "bpy>=4.0,<5.0" && \
