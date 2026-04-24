@@ -73,6 +73,8 @@ for raw_line in src.read_text(encoding='utf-8').splitlines():
         continue
     if lower.startswith('torch==') or lower.startswith('torchvision==') or lower.startswith('torchaudio=='):
         continue
+    if lower.startswith('bpy=='):
+        continue
     if lower.startswith('pymeshlab=='):
         out_lines.append('pymeshlab==2025.7.post1')
         continue
@@ -90,6 +92,10 @@ RUN \
     --timeout 180 \
     --prefer-binary \
     -r /tmp/requirements.spark_arm64.txt
+
+# bpy on ARM64 is generally not reliably available via pip; install with conda.
+RUN conda install -y -c conda-forge "bpy>=4.0,<5.0" && \
+    conda clean -afy
 
 RUN cd hy3dpaint/custom_rasterizer && \
     export CUDA_NVCC_FLAGS="-allow-unsupported-compiler" && \
