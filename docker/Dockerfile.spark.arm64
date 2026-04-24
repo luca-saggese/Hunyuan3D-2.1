@@ -45,9 +45,14 @@ WORKDIR /workspace/Hunyuan3D-2.1
 
 # Use PyTorch already provided by nvcr.io/nvidia/pytorch:24.12-py3
 # and avoid reinstalling torch/torchvision/torchaudio from requirements.
-RUN python -m pip install --upgrade pip setuptools wheel && \
-    grep -viE '^(torch|torchvision|torchaudio)([<>=].*)?$' requirements.txt > /tmp/requirements.no_torch.txt && \
-    pip install -r /tmp/requirements.no_torch.txt
+RUN if [ ! -f /workspace/Hunyuan3D-2.1/requirements.txt ]; then \
+        echo "ERROR: requirements.txt not found in image." && \
+        echo "Build from repo root, for example:" && \
+        echo "  docker build -f docker/Dockerfile.spark.arm64 -t hunyuan3d21:spark-arm64 ." && \
+        exit 1; \
+    fi && \
+    grep -viE '^(torch|torchvision|torchaudio)([<>=].*)?$' /workspace/Hunyuan3D-2.1/requirements.txt > /tmp/requirements.no_torch.txt && \
+    pip install --no-cache-dir -r /tmp/requirements.no_torch.txt
 
 RUN cd hy3dpaint/custom_rasterizer && \
     export CUDA_NVCC_FLAGS="-allow-unsupported-compiler" && \
