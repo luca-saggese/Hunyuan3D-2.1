@@ -1,4 +1,4 @@
-FROM nvcr.io/nvidia/pytorch:25.12-py3
+FROM nvcr.io/nvidia/pytorch:24.08-py3
 
 LABEL name="hunyuan3d21-spark-arm64" maintainer="hunyuan3d21"
 
@@ -42,6 +42,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 COPY . /workspace/Hunyuan3D-2.1
 WORKDIR /workspace/Hunyuan3D-2.1
+
+RUN python - <<'PY'
+import sys
+print('Python version:', sys.version)
+if sys.version_info[:2] != (3, 10):
+    raise SystemExit('ERROR: This Dockerfile expects Python 3.10 to match project requirements pins.')
+PY
 
 # Use PyTorch already provided by base image and avoid reinstalling
 # torch/torchvision/torchaudio from requirements.
