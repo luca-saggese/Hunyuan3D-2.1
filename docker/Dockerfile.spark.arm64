@@ -99,10 +99,6 @@ RUN \
 RUN CMAKE_ARGS="-DCMAKE_BUILD_TYPE=Release" \
     pip install --no-cache-dir --no-build-isolation --verbose xatlas==0.0.9
 
-# bpy on ARM64 is generally not reliably available via pip; install with conda.
-RUN conda install -y -c conda-forge "bpy>=4.0,<5.0" && \
-    conda clean -afy
-
 RUN cd hy3dpaint/custom_rasterizer && \
     export CUDA_NVCC_FLAGS="-allow-unsupported-compiler" && \
     pip install -e .
