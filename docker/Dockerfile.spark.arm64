@@ -69,6 +69,8 @@ out_lines = []
 for raw_line in src.read_text(encoding='utf-8').splitlines():
     line = raw_line.strip()
     lower = line.lower()
+    if lower.startswith('--extra-index-url') or lower.startswith('--index-url'):
+        continue
     if lower.startswith('torch==') or lower.startswith('torchvision==') or lower.startswith('torchaudio=='):
         continue
     if lower.startswith('pymeshlab=='):
@@ -81,7 +83,13 @@ print('Wrote', dst)
 PY
 
 RUN \
-    pip install --no-cache-dir -r /tmp/requirements.spark_arm64.txt
+    pip install --no-cache-dir \
+    --index-url https://pypi.org/simple \
+    --extra-index-url https://pypi.ngc.nvidia.com \
+    --retries 12 \
+    --timeout 180 \
+    --prefer-binary \
+    -r /tmp/requirements.spark_arm64.txt
 
 RUN cd hy3dpaint/custom_rasterizer && \
     export CUDA_NVCC_FLAGS="-allow-unsupported-compiler" && \
