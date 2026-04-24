@@ -57,8 +57,30 @@ RUN if [ ! -f /workspace/Hunyuan3D-2.1/requirements.txt ]; then \
         echo "Build from repo root, for example:" && \
         echo "  docker build -f docker/Dockerfile.spark.arm64 -t hunyuan3d21:spark-arm64 ." && \
         exit 1; \
-    fi && \
-    grep -viE '^(torch|torchvision|torchaudio)([<>=].*)?$' /workspace/Hunyuan3D-2.1/requirements.txt > /tmp/requirements.spark_arm64.txt && \
+    fi
+
+RUN python - <<'PY'
+from pathlib import Path
+
+src = Path('/workspace/Hunyuan3D-2.1/requirements.txt')
+dst = Path('/tmp/requirements.spark_arm64.txt')
+
+out_lines = []
+for raw_line in src.read_text(encoding='utf-8').splitlines():
+    line = raw_line.strip()
+    lower = line.lower()
+    if lower.startswith('torch==') or lower.startswith('torchvision==') or lower.startswith('torchaudio=='):
+        continue
+    if lower.startswith('pymeshlab=='):
+        out_lines.append('pymeshlab==2025.7.post1')
+        continue
+    out_lines.append(raw_line)
+
+dst.write_text('\n'.join(out_lines) + '\n', encoding='utf-8')
+print('Wrote', dst)
+PY
+
+RUN \
     pip install --no-cache-dir -r /tmp/requirements.spark_arm64.txt
 
 RUN cd hy3dpaint/custom_rasterizer && \
