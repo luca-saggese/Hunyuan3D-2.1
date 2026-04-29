@@ -1,0 +1,22 @@
+FROM --platform=linux/arm64 nvcr.io/nvidia/pytorch:24.08-py3
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV CUDA_HOME=/usr/local/cuda
+ENV TORCH_CUDA_ARCH_LIST="12.1+PTX"
+ENV MAX_JOBS=4
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git wget curl build-essential cmake ninja-build \
+    libgl1 libglib2.0-0 libegl1 libgles2 libxrender1 libxext6 \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN python -m pip install --upgrade pip setuptools wheel packaging
+
+COPY requirements.txt /tmp/requirements.txt
+
+# Non reinstallare torch/torchvision/torchaudio.
+RUN grep -vE '^(torch|torchvision|torchaudio)(==|>=|<=|~=|$)' /tmp/requirements.txt \
+    > /tmp/requirements.notorch.txt
+
+# Primo passaggio: evitare risoluzione aggressiva che rompe lo stack NVIDIA
+RUN pip install --no-cache-dir -r /tmp/requirements.notorch.txt

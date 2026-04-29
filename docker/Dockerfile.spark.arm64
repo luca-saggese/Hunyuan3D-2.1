@@ -7,6 +7,8 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 ENV PYOPENGL_PLATFORM=egl
 ENV TORCH_CUDA_ARCH_LIST="8.7;8.9;9.0"
+ENV LD_LIBRARY_PATH="/opt/hpcx/ucx/lib:/opt/hpcx/ucc/lib:${LD_LIBRARY_PATH}"
+ENV OPENCV_SKIP_PYTHON_LOADER=1
 
 WORKDIR /workspace
 
@@ -37,7 +39,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxext6 \
     libsm6 \
     libxkbcommon-x11-0 \
-    mesa-utils-extra && \
+    mesa-utils-extra \
+    libharfbuzz0b \
+    libfreetype6 \
+    libfontconfig1 \
+    libpng16-16 && \
+    libopencv-dev \
+    libopencv-core-dev \
+    libopencv-imgproc-dev \
+    libopencv-dnn-dev && \
     rm -rf /var/lib/apt/lists/*
 
 COPY . /workspace/Hunyuan3D-2.1

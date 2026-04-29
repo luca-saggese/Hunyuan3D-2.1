@@ -52,6 +52,8 @@ from fastapi import Depends, FastAPI, Header, HTTPException
 from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel, Field
 
+os.environ.setdefault("OPENCV_SKIP_PYTHON_LOADER", "1")
+
 sys.path.insert(0, "./hy3dshape")
 sys.path.insert(0, "./hy3dpaint")
 
