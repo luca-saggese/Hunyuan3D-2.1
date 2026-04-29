@@ -26,11 +26,11 @@ scikit-image==0.24.0
 rembg==2.0.65
 realesrgan==0.3.0
 tb_nightly==2.18.0a20240726
-basicsr==1.4.2
+# basicsr==1.4.2
 
 # 3D Mesh Processing
 trimesh==4.4.7
-pymeshlab==2022.2.post3
+pymeshlab>=2025.7 #2022.2.post3
 pygltflib==1.16.3
 xatlas==0.0.9
 open3d==0.18.0
@@ -53,7 +53,7 @@ psutil==6.0.0
 cupy-cuda12x==13.4.1
 
 # Blender
-bpy==4.0
+# bpy==4.0
 
 # ONNX Runtime
 onnxruntime==1.16.3
