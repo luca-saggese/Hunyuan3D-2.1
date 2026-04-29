@@ -22,3 +22,7 @@ RUN pip install --no-cache-dir basicsr==1.4.2 --no-deps
 
 # Primo passaggio: evitare risoluzione aggressiva che rompe lo stack NVIDIA
 RUN pip install --no-cache-dir -r /tmp/requirements.notorch.txt
+
+COPY . /workspace/Hunyuan3D-2.1
+WORKDIR /workspace/Hunyuan3D-2.1
+
