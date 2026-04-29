@@ -19,4 +19,4 @@ RUN grep -vE '^(torch|torchvision|torchaudio)(==|>=|<=|~=|$)' /tmp/requirements.
     > /tmp/requirements.notorch.txt
 
 # Primo passaggio: evitare risoluzione aggressiva che rompe lo stack NVIDIA
-RUN pip install --no-cache-dir -r /tmp/requirements.notorch.txt
+#RUN pip install --no-cache-dir -r /tmp/requirements.notorch.txt
