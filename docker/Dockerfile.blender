@@ -20,6 +20,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libjemalloc-dev libopenal-dev libxml2-dev libyaml-cpp-dev libzstd-dev \
     libopenimageio-dev \
     libpugixml-dev \
+    libtbb-dev \
     && rm -rf /var/lib/apt/lists/*
 
 RUN python3 -m pip install --upgrade pip setuptools wheel build packaging auditwheel "numpy<2"
