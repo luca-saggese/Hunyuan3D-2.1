@@ -16,6 +16,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libopenjp2-7-dev libsndfile1-dev libfftw3-dev libboost-all-dev \
     libjemalloc-dev libopenal-dev libepoxy-dev libxml2-dev libyaml-cpp-dev \
     patchelf rsync zip unzip ca-certificates curl pkg-config libzstd-dev \
+    libopenimageio-dev \
+    libopenimageio2.2 \
+    libopencolorio-dev \
+    libtiff-dev \
+    libjpeg-dev \
+    libpng-dev \
+    libopenexr-dev \
     && rm -rf /var/lib/apt/lists/*
 
 RUN python3 -m pip install --upgrade pip setuptools wheel build packaging auditwheel
