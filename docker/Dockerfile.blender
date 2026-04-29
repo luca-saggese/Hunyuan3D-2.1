@@ -35,6 +35,7 @@ RUN rm -rf ../build_linux_bpy && \
     make bpy CMAKE_CONFIG_ARGS="\
         -DWITH_CYCLES=OFF \
         -DWITH_CYCLES_EMBREE=OFF \
+        -DWITH_OPENIMAGEIO=OFF \
         -DWITH_OPENCOLORIO=OFF \
         -DWITH_OPENVDB=OFF \
         -DWITH_NANOVDB=OFF \
