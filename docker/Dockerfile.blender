@@ -1,0 +1,70 @@
+FROM --platform=linux/arm64 ubuntu:22.04
+
+ARG BLENDER_VERSION=v4.0.2
+ARG PYTHON_VERSION=3.10
+ARG WHEEL_DIR=/wheelhouse
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV MAKEFLAGS="-j$(nproc)"
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git subversion build-essential cmake ninja-build python3 python3-dev python3-pip \
+    libx11-dev libxxf86vm-dev libxcursor-dev libxi-dev libxrandr-dev libxinerama-dev \
+    libwayland-dev wayland-protocols libegl-dev libxkbcommon-dev libdbus-1-dev \
+    libgl1-mesa-dev libglu1-mesa-dev libglew-dev libfontconfig1-dev libfreetype6-dev \
+    libharfbuzz-dev libfribidi-dev libjpeg-dev libpng-dev libtiff-dev libopenexr-dev \
+    libopenjp2-7-dev libsndfile1-dev libfftw3-dev libboost-all-dev \
+    libjemalloc-dev libopenal-dev libepoxy-dev libxml2-dev libyaml-cpp-dev \
+    patchelf rsync zip unzip ca-certificates curl pkg-config \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN python3 -m pip install --upgrade pip setuptools wheel build packaging auditwheel
+
+WORKDIR /opt/blender-git
+
+RUN git clone --branch ${BLENDER_VERSION} --depth 1 https://projects.blender.org/blender/blender.git
+
+WORKDIR /opt/blender-git/blender
+
+# Scarica/builda dipendenze Blender dove necessario.
+# Su ARM64 spesso non puoi contare sui precompiled libs x86_64.
+RUN ./build_files/build_environment/install_linux_packages.py --all || true
+
+# Prima configurazione bpy
+RUN make bpy
+
+# Installa in staging dir invece che nel site-packages reale
+RUN cmake --install ../build_linux_bpy --prefix /opt/bpy-install
+
+# Crea wheel minimale dal risultato installato
+RUN mkdir -p /tmp/bpywheel/bpy_package && \
+    cp -a /opt/bpy-install/lib/python${PYTHON_VERSION}/site-packages/* /tmp/bpywheel/bpy_package/ || \
+    cp -a /opt/bpy-install/lib/python*/site-packages/* /tmp/bpywheel/bpy_package/
+
+WORKDIR /tmp/bpywheel
+
+RUN cat > pyproject.toml <<'EOF'
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+EOF
+
+RUN cat > setup.py <<'EOF'
+from setuptools import setup, find_packages
+from pathlib import Path
+
+setup(
+    name="bpy",
+    version="4.0.2",
+    packages=find_packages(),
+    package_data={"": ["*.so", "*.so.*", "*.py", "*.json", "*.txt"]},
+    include_package_data=True,
+    zip_safe=False,
+)
+EOF
+
+RUN mkdir -p bpy && \
+    cp -a bpy_package/* . && \
+    python3 -m build --wheel --outdir ${WHEEL_DIR}
+
+CMD ["bash", "-lc", "ls -lh /wheelhouse"]

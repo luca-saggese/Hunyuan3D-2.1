@@ -27,6 +27,38 @@ ENV CMAKE_POLICY_VERSION_MINIMUM=3.5
 
 RUN pip install --no-cache-dir xatlas==0.0.9
 
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libharfbuzz0b \
+    libopengl0 \
+    libgl1 \
+    libglx0 \
+    libegl1 \
+    libgles2 \
+    libharfbuzz0b \
+    libglib2.0-0 \
+    libxrender1 \
+    libxext6 \
+    libx11-6 \
+    libxcb1 \
+    libxkbcommon0 \
+    libdbus-1-3 \
+    libfontconfig1 \
+    libfreetype6 \
+    && rm -rf /var/lib/apt/lists/*
+
+# ho un problema di incompatibilita di opencv-python con la versione di opencv installata a livello di sistema, quindi disinstallo tutte le versioni di opencv e reinstallo solo opencv-python-headless che non ha dipendenze native.
+RUN pip uninstall -y opencv-python opencv-python-headless opencv-contrib-python opencv-contrib-python-headless
+RUN rm -rf /usr/local/lib/python3.10/dist-packages/cv2
+RUN rm -rf /usr/local/lib/python3.10/dist-packages/opencv_python*
+RUN rm -rf /usr/local/lib/python3.10/dist-packages/opencv_contrib_python*
+RUN pip install --no-cache-dir --force-reinstall --no-deps "opencv-python-headless==4.10.0.84"
+
+RUN wget https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth -P hy3dpaint/ckpt
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    blender \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY . /workspace/Hunyuan3D-2.1
 WORKDIR /workspace/Hunyuan3D-2.1
 
